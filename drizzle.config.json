@@ -1,0 +1,13 @@
+{
+  "schema": "./db/schema/index.ts",
+  "out": "./db/migrations",
+  "dialect": "postgresql",
+  "dbCredentials": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "Sohansg940823",
+    "database": "student_db",
+    "ssl": false
+  }
+}
