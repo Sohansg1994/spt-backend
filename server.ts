@@ -10,6 +10,8 @@ import enrollmentRoutes from "./routes/enrollmentRoutes";
 import subjectRoutes from "./routes/subjectRoutes";
 import assignmentResultRoutes from "./routes/assignmentResultRoutes";
 import assignmentRoutes from "./routes/assignmentRoutes";
+import attendanceRoutes from "./routes/attendanceRoutes";
+import paymentRoutes from "./routes/paymentRoutes";
 dotenv.config();
 
 const app = express();
@@ -26,5 +28,7 @@ app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/assignmentResults", assignmentResultRoutes);
 app.use("/api/assignments", assignmentRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/payments", paymentRoutes);
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server running on port ${port}`));

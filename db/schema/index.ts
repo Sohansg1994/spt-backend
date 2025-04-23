@@ -6,6 +6,8 @@ import {
   date,
   pgEnum,
   primaryKey,
+  numeric,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { ClassTypeEnum } from "../../enums/classType";
 import { AttendanceStatusEnum } from "../../enums/attendance";
@@ -134,4 +136,13 @@ export const attendance = pgTable("attendance", {
   })
     .notNull()
     .default(AttendanceStatusEnum.PRESENT),
+});
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").notNull(),
+  classId: integer("class_id").notNull(),
+  amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+  forMonth: text("for_month").notNull(), // e.g., "2025-04"
+  paidAt: date("paid_at").notNull(), // Date of payment
+  isFree: boolean("is_free").default(false).notNull(), // 👈 NEW
 });
