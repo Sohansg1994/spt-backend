@@ -1,72 +1,58 @@
-import { db } from "../db/client";
-import { attendance, attendanceStatus } from "../db/schema/index";
 import { Request, Response } from "express";
-import { eq } from "drizzle-orm";
+import * as attendanceService from "../services/attendanceService";
+import { AttendanceStatusEnum } from "../enums/attendance";
+import { successResponse, errorResponse } from "../utils/response";
 
-// Create a new attendance record
-export const createAttendance = async (req: Request, res: Response) => {
+export const markStudentAttendance = async (req: Request, res: Response) => {
   try {
-    const { studentId, date, status } = req.body;
+    const { studentId, classId, date, status } = req.body;
 
-    // Validate input
-    if (!studentId || !date || !status) {
-      return res.status(400).json({ error: "All fields are required" });
+    if (!studentId || !classId || !date || !status) {
+      return res
+        .status(400)
+        .json(errorResponse("Missing required fields", 400));
     }
 
-    // Validate that the status is a valid enum value
-    const validStatuses = attendanceStatus.enumValues;
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        error: `Invalid status. Allowed values are: ${validStatuses.join(
-          ", "
-        )}`,
-      });
+    if (!Object.values(AttendanceStatusEnum).includes(status)) {
+      return res
+        .status(400)
+        .json(errorResponse("Invalid attendance status", 400));
     }
 
-    // Insert the attendance record into the database
-    const result = await db.insert(attendance).values({
+    const attendance = await attendanceService.markAttendance({
       studentId,
+      classId,
       date,
       status,
     });
 
-    res
-      .status(201)
-      .json({ message: "Attendance record created successfully", result });
+    res.status(200).json(successResponse(attendance, "Attendance marked"));
   } catch (error) {
-    console.error("Error creating attendance record:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(error);
+    res.status(500).json(errorResponse("Internal server error"));
   }
 };
 
-// Get all attendance records
-export const getAllAttendance = async (req: Request, res: Response) => {
+export const getStudentAttendance = async (req: Request, res: Response) => {
   try {
-    const allAttendance = await db.select().from(attendance);
-    res.json(allAttendance);
+    const studentId = parseInt(req.params.studentId);
+    const data = await attendanceService.getAttendanceByStudent(studentId);
+    res.json(successResponse(data));
   } catch (error) {
-    console.error("Error fetching attendance records:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json(errorResponse("Internal server error"));
   }
 };
 
-// Get an attendance record by ID
-export const getAttendanceById = async (req: Request, res: Response) => {
+export const getClassAttendance = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-
-    const attendanceRecord = await db
-      .select()
-      .from(attendance)
-      .where(eq(attendance.id, Number(id)));
-
-    if (attendanceRecord.length === 0) {
-      return res.status(404).json({ error: "Attendance record not found" });
-    }
-
-    res.json(attendanceRecord[0]);
+    const classId = parseInt(req.params.classId);
+    const { date } = req.query;
+    const data = await attendanceService.getAttendanceByClass(
+      classId,
+      date as string
+    );
+    res.json(successResponse(data));
   } catch (error) {
-    console.error("Error fetching attendance record:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json(errorResponse("Internal server error"));
   }
 };
