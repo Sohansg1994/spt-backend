@@ -1,56 +1,54 @@
-import { db } from "../db/client";
-import { subjects } from "../db/schema/index";
 import { Request, Response } from "express";
-import { eq } from "drizzle-orm";
+import * as subjectService from "../services/subjectService";
+import { successResponse, errorResponse } from "../utils/response";
 
-// Create a new subject
 export const createSubject = async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
 
-    // Validate input
     if (!name) {
-      return res.status(400).json({ error: "Subject name is required" });
+      return res
+        .status(400)
+        .json(errorResponse("Subject name is required", 400));
     }
 
-    // Insert the subject into the database
-    const result = await db.insert(subjects).values({ name });
+    const subject = await subjectService.createSubject({ name });
 
-    res.status(201).json({ message: "Subject created successfully", result });
+    return res
+      .status(201)
+      .json(successResponse(subject, "Subject created successfully"));
   } catch (error) {
     console.error("Error creating subject:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json(errorResponse("Internal server error"));
   }
 };
 
-// Get all subjects
-export const getAllSubjects = async (req: Request, res: Response) => {
+export const getAllSubjects = async (_req: Request, res: Response) => {
   try {
-    const allSubjects = await db.select().from(subjects);
-    res.json(allSubjects);
+    const subjects = await subjectService.getAllSubjects();
+    res
+      .status(200)
+      .json(successResponse(subjects, "Subjects fetched successfully"));
   } catch (error) {
     console.error("Error fetching subjects:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json(errorResponse("Internal server error"));
   }
 };
 
-// Get a subject by ID
 export const getSubjectById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id);
+    const subject = await subjectService.getSubjectById(id);
 
-    const subject = await db
-      .select()
-      .from(subjects)
-      .where(eq(subjects.id, Number(id)));
-
-    if (subject.length === 0) {
-      return res.status(404).json({ error: "Subject not found" });
+    if (!subject) {
+      return res.status(404).json(errorResponse("Subject not found", 404));
     }
 
-    res.json(subject[0]);
+    res
+      .status(200)
+      .json(successResponse(subject, "Subject fetched successfully"));
   } catch (error) {
     console.error("Error fetching subject:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json(errorResponse("Internal server error"));
   }
 };
