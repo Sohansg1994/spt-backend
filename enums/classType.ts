@@ -1,0 +1,7 @@
+export enum ClassTypeEnum {
+  THEORY = "THEORY",
+  REVISION = "REVISION",
+  PRIMARY = "PRIMARY",
+  PRACTICAL = "PRACTICAL",
+  NONE_OF_ABOVE = "NONE_OF_ABOVE",
+}
