@@ -1,6 +1,6 @@
-# Student Progress Tracker Backend (spt-backend)
+# Educational Management System Backend (spt-backend)
 
-This is the backend service for the Student Progress Tracker application. It provides APIs for managing student data, tracking progress, and other related functionalities.
+This is the backend service for the Educational Management System application. It provides APIs for managing student data, tracking progress, and other related functionalities.
 
 ## Features
 
