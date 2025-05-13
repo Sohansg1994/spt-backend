@@ -43,6 +43,18 @@ export const getAllStudents = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllStudentsWithClasses = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const students = await studentService.getAllStudentsWithClasses();
+    res.json(successResponse(students, "Students fetched successfully"));
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    res.status(500).json(errorResponse("Internal server error"));
+  }
+};
 export const getStudentById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);

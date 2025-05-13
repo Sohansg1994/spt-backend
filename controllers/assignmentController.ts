@@ -1,7 +1,28 @@
 import { Request, Response } from "express";
 import * as assignmentService from "../services/assignmentService";
 import { successResponse, errorResponse } from "../utils/response";
+export const createAssignment = async (req: Request, res: Response) => {
+  try {
+    const { name, classId, date } = req.body;
 
+    if (!name || !classId || !date) {
+      return res
+        .status(400)
+        .json(errorResponse("Missing required fields", 400));
+    }
+
+    const assignment = await assignmentService.createAssignment({
+      name,
+      classId,
+      date,
+    });
+
+    res.status(201).json(successResponse(assignment, "Assignment created"));
+  } catch (error) {
+    console.error("Error creating assignment:", error);
+    res.status(500).json(errorResponse("Internal server error"));
+  }
+};
 export const createAssignmentWithResults = async (
   req: Request,
   res: Response
@@ -32,6 +53,7 @@ export const createAssignmentWithResults = async (
 export const getAssignmentsByClass = async (req: Request, res: Response) => {
   try {
     const classId = parseInt(req.params.classId);
+
     const data = await assignmentService.getAssignmentsByClass(classId);
     res.status(200).json(successResponse(data, "Assignments fetched"));
   } catch (error) {

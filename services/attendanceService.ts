@@ -3,7 +3,7 @@ import { attendance } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import dayjs from "dayjs";
 import { AttendanceStatusEnum } from "../enums/attendance";
-// Mark or update attendance
+
 export const markAttendance = async ({
   studentId,
   classId,
@@ -57,7 +57,6 @@ export const getAttendanceByStudent = async (studentId: number) => {
     .where(eq(attendance.studentId, studentId));
 };
 
-// Get attendance for a class (optionally filtered by date)
 export const getAttendanceByClass = async (classId: number, date?: string) => {
   const conditions = [eq(attendance.classId, classId)];
 

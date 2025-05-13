@@ -35,7 +35,18 @@ export const createAssignmentWithResults = async (
 
   return { assignment, results: insertedResults };
 };
+export const createAssignment = async (input: {
+  name: string;
+  classId: number;
+  date: string;
+}) => {
+  const [assignment] = await db
+    .insert(assignments)
+    .values({ name: input.name, classId: input.classId, date: input.date })
+    .returning();
 
+  return assignment;
+};
 export const getAssignmentsByClass = async (classId: number) => {
   return await db
     .select()

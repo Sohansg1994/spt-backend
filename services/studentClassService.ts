@@ -1,6 +1,6 @@
 import { db } from "../db/client";
 import { studentClasses, students, classes, users } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
 type EnrollStudentInput = {
   studentId: number;
@@ -22,6 +22,42 @@ export const getAllEnrollments = async () => {
       classId: studentClasses.classId,
     })
     .from(studentClasses);
+};
+
+type EnrollMultipleStudentsInput = {
+  studentIds: number[];
+  classId: number;
+};
+
+export const enrollMultipleStudentsInClass = async ({
+  studentIds,
+  classId,
+}: EnrollMultipleStudentsInput) => {
+  const existing: { studentId: number }[] = await db
+    .select({ studentId: studentClasses.studentId })
+    .from(studentClasses)
+    .where(
+      and(
+        eq(studentClasses.classId, classId),
+        inArray(studentClasses.studentId, studentIds)
+      )
+    );
+
+  const existingStudentIds = new Set(existing.map((e) => e.studentId));
+
+  const newEnrollments = studentIds
+    .filter((id) => !existingStudentIds.has(id))
+    .map((studentId) => ({ studentId, classId }));
+
+  if (newEnrollments.length > 0) {
+    await db.insert(studentClasses).values(newEnrollments);
+  }
+
+  return {
+    enrolledStudentIds: newEnrollments.map((e) => e.studentId),
+    skippedStudentIds: [...existingStudentIds],
+    classId,
+  };
 };
 
 export const getClassesForStudent = async (studentId: number) => {

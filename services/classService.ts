@@ -1,6 +1,12 @@
 import { db } from "../db/client";
-import { classes, institutes, subjects, teachers } from "../db/schema";
-import { eq } from "drizzle-orm";
+import {
+  classes,
+  subjects,
+  teachers,
+  users,
+  studentClasses,
+} from "../db/schema";
+import { eq, sql } from "drizzle-orm";
 
 type CreateClassInput = {
   name: string;
@@ -44,10 +50,30 @@ export const getAllClasses = async () => {
       teacherId: classes.teacherId,
       subjectId: classes.subjectId,
       instituteId: classes.instituteId,
+      subjectName: subjects.name,
+      teacherName: users.name,
     })
-    .from(classes);
+    .from(classes)
+    .innerJoin(subjects, eq(classes.subjectId, subjects.id))
+    .innerJoin(teachers, eq(classes.teacherId, teachers.id))
+    .innerJoin(users, eq(teachers.userId, users.id));
 };
-
+export const getClassesSummary = async () => {
+  return await db
+    .select({
+      id: classes.id,
+      name: classes.name,
+      teacherName: users.name,
+      totalEnrolled: sql<number>`COUNT(${studentClasses.studentId})`.as(
+        "totalEnrolled"
+      ),
+    })
+    .from(classes)
+    .leftJoin(studentClasses, eq(classes.id, studentClasses.classId))
+    .innerJoin(teachers, eq(classes.teacherId, teachers.id))
+    .innerJoin(users, eq(teachers.userId, users.id))
+    .groupBy(classes.id, classes.name, users.name);
+};
 export const getClassById = async (id: number) => {
   const result = await db
     .select({

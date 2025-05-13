@@ -49,7 +49,17 @@ export const getAllClasses = async (_req: Request, res: Response) => {
     res.status(500).json(errorResponse("Internal server error"));
   }
 };
-
+export const getClassesSummary = async (_req: Request, res: Response) => {
+  try {
+    const classes = await classService.getClassesSummary();
+    res
+      .status(200)
+      .json(successResponse(classes, "Classes fetched successfully"));
+  } catch (error) {
+    console.error("Error fetching classes:", error);
+    res.status(500).json(errorResponse("Internal server error"));
+  }
+};
 export const getClassById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);

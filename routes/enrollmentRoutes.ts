@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  enrollMultipleStudents,
   enrollStudentInClass,
   getAllEnrollments,
   removeStudentFromClass,
@@ -8,6 +9,7 @@ import {
 const router = express.Router();
 
 router.post("/", enrollStudentInClass);
+router.post("/multiple", enrollMultipleStudents);
 
 router.get("/", getAllEnrollments);
 

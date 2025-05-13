@@ -1,10 +1,19 @@
 import dayjs from "dayjs";
 import { db } from "../db/client";
-import { students, users } from "../db/schema";
+import { students, users, studentClasses, classes } from "../db/schema";
 import { eq, like } from "drizzle-orm";
 
 export const getAllStudents = async () => {
-  return db.select().from(students);
+  return await db
+    .select({
+      id: students.id,
+      registrationNumber: students.registrationNumber,
+      name: users.name,
+      email: users.email,
+      gradeLevel: students.gradeLevel,
+    })
+    .from(students)
+    .innerJoin(users, eq(students.userId, users.id));
 };
 
 export const getStudentById = async (id: number) => {
@@ -12,7 +21,39 @@ export const getStudentById = async (id: number) => {
 
   return result[0] || null;
 };
+export const getAllStudentsWithClasses = async () => {
+  // First, fetch all students with their basic info
+  const studentsWithUser = await db
+    .select({
+      id: students.id,
+      registrationNumber: students.registrationNumber,
+      name: users.name,
+      email: users.email,
+    })
+    .from(students)
+    .innerJoin(users, eq(students.userId, users.id));
 
+  // Then, for each student, fetch their class enrollments
+  const result = await Promise.all(
+    studentsWithUser.map(async (student) => {
+      const enrolledClasses = await db
+        .select({
+          classId: classes.id,
+          name: classes.name,
+        })
+        .from(studentClasses)
+        .innerJoin(classes, eq(studentClasses.classId, classes.id))
+        .where(eq(studentClasses.studentId, student.id));
+
+      return {
+        ...student,
+        classes: enrolledClasses,
+      };
+    })
+  );
+
+  return result;
+};
 export const getStudentByRegistrationNumber = async (regNo: string) => {
   const result = await db
     .select()

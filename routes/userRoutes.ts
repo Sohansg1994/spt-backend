@@ -4,17 +4,14 @@ import {
   getAllUsers,
   getAuthenticatedUser,
   getUserById,
+  loginUser,
 } from "../controllers/userController";
 
 const router = express.Router();
-
-// POST /api/users - Create a new user
 router.post("/", createUser);
-
-// GET /api/users - Get all users
+router.post("/login", loginUser);
 router.get("/", getAllUsers);
 router.get("/me", getAuthenticatedUser);
-// GET /api/users/:id - Get a user by ID
 router.get("/:id", getUserById);
 
 export default router;

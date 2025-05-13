@@ -8,7 +8,7 @@ import {
   getUserByIdFromDb,
 } from "../services/userService";
 import { roleEnum } from "../db/schema/index";
-
+const JWT_EXPIRES_IN = "1d";
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 export const createUser = async (req: Request, res: Response) => {
   try {
@@ -49,6 +49,56 @@ export const createUser = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check required fields
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    // Find user by email
+    const user = await findUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Compare password with hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Create JWT payload
+    const tokenPayload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    // Generate token
+    const token = jwt.sign(tokenPayload, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
+
+    // Return token with basic user info
+    return res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 

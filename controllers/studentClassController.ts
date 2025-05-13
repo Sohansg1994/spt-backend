@@ -26,6 +26,32 @@ export const enrollStudentInClass = async (req: Request, res: Response) => {
   }
 };
 
+export const enrollMultipleStudents = async (req: Request, res: Response) => {
+  try {
+    const { studentIds, classId } = req.body;
+
+    if (!Array.isArray(studentIds) || studentIds.length === 0 || !classId) {
+      return res
+        .status(400)
+        .json(
+          errorResponse("studentIds (array) and classId are required", 400)
+        );
+    }
+
+    const result = await studentClassService.enrollMultipleStudentsInClass({
+      studentIds,
+      classId,
+    });
+
+    res
+      .status(201)
+      .json(successResponse(result, "Students enrolled successfully"));
+  } catch (error) {
+    console.error("Error enrolling multiple students:", error);
+    res.status(500).json(errorResponse("Internal server error"));
+  }
+};
+
 export const getAllEnrollments = async (_req: Request, res: Response) => {
   try {
     const enrollments = await studentClassService.getAllEnrollments();
